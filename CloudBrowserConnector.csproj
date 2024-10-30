@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageDescription>Client for connection with CloudBrowser.</PackageDescription>
+    <PackageTags>puppeteersharp cloudbrowser connector</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PuppeteerSharp" Version="20.0.2" />
+  </ItemGroup>
+
+</Project>
