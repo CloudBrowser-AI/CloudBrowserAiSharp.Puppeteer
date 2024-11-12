@@ -2,12 +2,12 @@
 
 namespace CloudBrowser.Types.Response;
 
-internal class GetResponse {
+public class GetResponse {
     public BrowserStatus Error { get; set; }
     public Session[] Sessions { get; set; }
 }
 
-internal class Session {
+public class Session {
     public DateTime StartedOn { get; set; }
     public string Label { get; set; }
     public string Address { get; set; }
