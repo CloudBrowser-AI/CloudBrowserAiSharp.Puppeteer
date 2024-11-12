@@ -12,8 +12,7 @@ internal class ApiClient : ClientBase{
 
     }
 
-    public Task<OpenResponse> OpenAdvanced(string token, BrowserOptions rq = null, TimeSpan? timeout = null, CancellationToken ct = default) => Post<OpenResponse, BrowserOptions>("OpenAdvanced", token, rq, timeout, ct);
-    //public Task<OpenResponse> Open(string token, TimeSpan? timeout = null, CancellationToken ct = default) => Get<OpenResponse>("Open", token, timeout, ct);
+    public Task<OpenResponse> Open(string token, BrowserOptions rq = null, TimeSpan? timeout = null, CancellationToken ct = default) => Post<OpenResponse, BrowserOptions>("Open", token, rq, timeout, ct);
     public Task<SimpleResponse> Close(string token, CloseRequest rq = null, TimeSpan? timeout = null, CancellationToken ct = default) => Post<SimpleResponse, CloseRequest>("Close", token, rq, timeout, ct);
     public Task<GetResponse> Get(string token, TimeSpan? timeout = null, CancellationToken ct = default) => Get<GetResponse>("Get", token, timeout, ct);
     public Task<StartRemoteDesktopResponse> StartRemoteDesktop(string token, StartRemoteDesktopRequest rq, TimeSpan? timeout = null, CancellationToken ct = default) => Post<StartRemoteDesktopResponse, StartRemoteDesktopRequest>("StartRemoteDesktop", token, rq, timeout, ct);

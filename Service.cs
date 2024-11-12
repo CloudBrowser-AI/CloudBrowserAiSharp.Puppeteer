@@ -13,7 +13,7 @@ public class Service(string _apiToken) {
     readonly ApiClient _client = new();
 
     public async Task<IBrowser> LaunchAsync(BrowserOptions options = null) {
-        OpenResponse rp = await _client.OpenAdvanced(_apiToken, options).ConfigureAwait(false);
+        OpenResponse rp = await _client.Open(_apiToken, options).ConfigureAwait(false);
         switch (rp.Status) {
             case BrowserStatus.Succes:
                 break;
@@ -36,7 +36,7 @@ public class Service(string _apiToken) {
         }).ConfigureAwait(false);
     }
 
-    public Task<OpenResponse> Open(BrowserOptions options = null, TimeSpan ? timeout = null, CancellationToken ct = default) => _client.OpenAdvanced(_apiToken,  options, timeout: timeout, ct: ct);
+    public Task<OpenResponse> Open(BrowserOptions options = null, TimeSpan ? timeout = null, CancellationToken ct = default) => _client.Open(_apiToken,  options, timeout: timeout, ct: ct);
 
     public Task<GetResponse> Get(TimeSpan? timeout = null, CancellationToken ct = default) => _client.Get(_apiToken, timeout: timeout, ct: ct);
 
