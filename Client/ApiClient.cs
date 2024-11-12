@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CloudBrowser.Client;
 internal class ApiClient : ClientBase{
-    public ApiClient() : base(new Uri("http://production.cloudbrowser.ai")) {
+    public ApiClient() : base(new Uri("https://production.cloudbrowser.ai")) {
 
     }
 

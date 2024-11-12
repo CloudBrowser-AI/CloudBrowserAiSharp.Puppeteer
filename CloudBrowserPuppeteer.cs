@@ -1,11 +1,8 @@
 using System;
-using System.Linq.Expressions;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CloudBrowser.Client;
 using CloudBrowser.Types;
-using CloudBrowser.Types.Request;
 using CloudBrowser.Types.Response;
 using PuppeteerSharp;
 
