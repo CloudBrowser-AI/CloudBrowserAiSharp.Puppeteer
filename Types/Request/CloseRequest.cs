@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types.Request;
+namespace CloudBrowserPuppeteerClient.Types.Request;
 
 internal class CloseRequest {
     public string Address { get; set; }

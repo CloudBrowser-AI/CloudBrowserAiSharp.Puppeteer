@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types;
+namespace CloudBrowserPuppeteerClient.Types;
 
 public class BrowserOptionsProxy {
     public string Host { get; set; }

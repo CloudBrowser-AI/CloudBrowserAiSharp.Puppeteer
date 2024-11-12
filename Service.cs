@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CloudBrowser.Client;
-using CloudBrowser.Types;
-using CloudBrowser.Types.Response;
+using CloudBrowserPuppeteerClient.Client;
+using CloudBrowserPuppeteerClient.Types;
+using CloudBrowserPuppeteerClient.Types.Response;
 using PuppeteerSharp;
 
 namespace CloudBrowserPuppeteerClient;
@@ -13,12 +13,7 @@ public class Service(string _apiToken) {
     readonly ApiClient _client = new();
 
     public async Task<IBrowser> LaunchAsync(BrowserOptions options = null) {
-        OpenResponse rp;
-        if (options != null) {
-            rp = await _client.OpenAdvanced(_apiToken, options).ConfigureAwait(false);
-        } else {
-            rp = await _client.Open(_apiToken).ConfigureAwait(false);
-        }
+        OpenResponse rp = await _client.OpenAdvanced(_apiToken, options).ConfigureAwait(false);
         switch (rp.Status) {
             case BrowserStatus.Succes:
                 break;

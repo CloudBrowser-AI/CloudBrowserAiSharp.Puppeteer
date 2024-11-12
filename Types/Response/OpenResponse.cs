@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types.Response;
+namespace CloudBrowserPuppeteerClient.Types.Response;
 
 internal class OpenResponse {
     public BrowserStatus Status { get; set; }

@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types;
+namespace CloudBrowserPuppeteerClient.Types;
 
 public enum BrowserStatus {
     Unknown = 0,

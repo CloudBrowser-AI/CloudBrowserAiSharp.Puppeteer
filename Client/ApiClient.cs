@@ -1,12 +1,12 @@
-﻿using CloudBrowser.Types;
-using CloudBrowser.Types.Request;
-using CloudBrowser.Types.Response;
+﻿using CloudBrowserPuppeteerClient.Types;
+using CloudBrowserPuppeteerClient.Types.Request;
+using CloudBrowserPuppeteerClient.Types.Response;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CloudBrowser.Client;
+namespace CloudBrowserPuppeteerClient.Client;
 internal class ApiClient : ClientBase{
     public ApiClient() : base(new Uri("https://production.cloudbrowser.ai")) {
 

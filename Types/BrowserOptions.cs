@@ -1,6 +1,6 @@
 ﻿using PuppeteerSharp;
 
-namespace CloudBrowser.Types;
+namespace CloudBrowserPuppeteerClient.Types;
 
 public class BrowserOptions {
     public string[] Args { get; set; }

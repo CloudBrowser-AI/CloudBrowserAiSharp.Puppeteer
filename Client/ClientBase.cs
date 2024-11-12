@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text;
 
-namespace CloudBrowser.Client;
+namespace CloudBrowserPuppeteerClient.Client;
 
 internal static class Json {
     public const string MediaType = "application/json";

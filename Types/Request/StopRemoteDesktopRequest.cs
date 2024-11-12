@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types.Request;
+namespace CloudBrowserPuppeteerClient.Types.Request;
 
 internal class StopRemoteDesktopRequest {
     public string Address { get; set; }

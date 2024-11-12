@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types.Response;
+namespace CloudBrowserPuppeteerClient.Types.Response;
 
 public class StartRemoteDesktopResponse {
     public bool Success { get; set; }
