@@ -6,11 +6,11 @@ using CloudBrowser.Types;
 using CloudBrowser.Types.Response;
 using PuppeteerSharp;
 
-namespace CloudBrowser;
+namespace CloudBrowserPuppeteerClient;
 
-public class CloudBrowserPuppeteer(string _apiToken) {
+public class Service(string _apiToken) {
 
-    ApiClient _client = new();
+    readonly ApiClient _client = new();
 
     public async Task<IBrowser> LaunchAsync(BrowserOptions options = null) {
         OpenResponse rp;
