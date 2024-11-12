@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudBrowser.Types;
+namespace CloudBrowserPuppeteerClient.Types;
 public class AuthorizationException : Exception {
 
 }

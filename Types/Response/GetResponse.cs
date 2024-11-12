@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CloudBrowser.Types.Response;
+namespace CloudBrowserPuppeteerClient.Types.Response;
 
 public class GetResponse {
     public BrowserStatus Error { get; set; }

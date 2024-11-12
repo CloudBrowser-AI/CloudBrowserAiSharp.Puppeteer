@@ -10,8 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text;
 
-namespace CloudBrowser.Client;
+namespace CloudBrowserPuppeteerClient.Client;
 
 internal static class Json {
     public const string MediaType = "application/json";
@@ -46,19 +47,25 @@ internal abstract class ClientBase (Uri baseAddress) {
 
     protected string BaseUrl => GetClient()?.BaseAddress?.ToString().TrimEnd('/') ?? "";
 
-    static HttpRequestMessage GenerateMessage(string url, IDictionary<string, string>? addedHeaders = null, HttpMethod method = null) {
+    static HttpRequestMessage GenerateMessage(string url, IDictionary<string, string> addedHeaders = null, HttpMethod method = null) {
         HttpRequestMessage httpRequestMessage = new () {
             Method = method ?? HttpMethod.Get,
             RequestUri = new Uri(url)
         };
 
-        httpRequestMessage.Headers.AcceptEncoding.TryParseAdd("deflate");
+        httpRequestMessage.Headers.AcceptEncoding.TryParseAdd("deflate,br,gzip");
         httpRequestMessage.Headers.Accept.TryParseAdd("application/json");
+
+        if (addedHeaders != null) {
+            foreach (KeyValuePair<string, string> addedHeader in addedHeaders) {
+                httpRequestMessage.Headers.TryAddWithoutValidation(addedHeader.Key, addedHeader.Value);
+            }
+        }
 
         return httpRequestMessage;
     }
 
-    static async Task<TOutput?> ReadResponse<TOutput>(HttpResponseMessage rs, CancellationToken ct) {
+    static async Task<TOutput> ReadResponse<TOutput>(HttpResponseMessage rs, CancellationToken ct) {
         using Stream stream = await rs.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
         Stream reader = await DecompressStream(rs, stream).ConfigureAwait(false);
         return await Json.ReadFromAsync<TOutput>(reader, ct).ConfigureAwait(false);
@@ -71,9 +78,9 @@ internal abstract class ClientBase (Uri baseAddress) {
         }
 
         Stream stream2 = text switch {
-            "gzip" => new GZipStream(stream, CompressionMode.Decompress, leaveOpen: false),
-            "deflate" => new DeflateStream(stream, CompressionMode.Decompress, leaveOpen: false),
-            "br" => new BrotliStream(stream, CompressionMode.Decompress, leaveOpen: false),
+            "gzip" => new GZipStream(stream, CompressionMode.Decompress, false),
+            "deflate" => new DeflateStream(stream, CompressionMode.Decompress, false),
+            "br" => new BrotliStream(stream, CompressionMode.Decompress, false),
             _ => stream,
         };
         MemoryStream copy = new ();
@@ -159,13 +166,13 @@ internal abstract class ClientBase (Uri baseAddress) {
         return httpClient;
     }
 
-    protected async Task<TOutput?> DoGet<TOutput>(string url, IDictionary<string, string>? addedHeaders = null, TimeSpan? timeout = null, CancellationToken ct = default) {
+    protected async Task<TOutput> DoGet<TOutput>(string url, IDictionary<string, string> addedHeaders = null, TimeSpan? timeout = null, CancellationToken ct = default) {
         HttpClient client = GetClient(timeout);
         HttpRequestMessage rq = GenerateMessage(url, addedHeaders);
         return await Read<TOutput>(client, rq, ct).ConfigureAwait(false);
     }
 
-    protected async Task<TOutput?> DoPost<TOutput, TInput>(string url, TInput? body, IDictionary<string, string>? addedHeaders = null, TimeSpan? timeout = null, CancellationToken ct = default) {
+    protected async Task<TOutput> DoPost<TOutput, TInput>(string url, TInput body, IDictionary<string, string> addedHeaders = null, TimeSpan? timeout = null, CancellationToken ct = default) {
         HttpClient cli = GetClient(timeout);
         HttpRequestMessage rq = GenerateMessage(url, addedHeaders);
         rq.Method = HttpMethod.Post;
@@ -173,7 +180,7 @@ internal abstract class ClientBase (Uri baseAddress) {
         return await Read<TOutput>(cli, rq, ct).ConfigureAwait(false);
     }
 
-    protected async Task DoPost<TInput>(string url, TInput? body, TimeSpan? timeout = null, CancellationToken ct = default(CancellationToken)) {
+    protected async Task DoPost<TInput>(string url, TInput body, TimeSpan? timeout = null, CancellationToken ct = default(CancellationToken)) {
         HttpClient cli = GetClient(timeout);
         HttpRequestMessage rq = GenerateMessage(url);
         rq.Method = HttpMethod.Post;

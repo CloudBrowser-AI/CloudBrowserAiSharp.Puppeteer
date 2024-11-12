@@ -1,5 +1,5 @@
 ﻿
-namespace CloudBrowser.Types;
+namespace CloudBrowserPuppeteerClient.Types;
 
 public enum ErrorRemoteDesktop{
     Unknown = 0,
