@@ -36,6 +36,8 @@ public class Service(string _apiToken) {
         }).ConfigureAwait(false);
     }
 
+    public Task<OpenResponse> Open(BrowserOptions options = null, TimeSpan ? timeout = null, CancellationToken ct = default) => _client.OpenAdvanced(_apiToken,  options, timeout: timeout, ct: ct);
+
     public Task<GetResponse> Get(TimeSpan? timeout = null, CancellationToken ct = default) => _client.Get(_apiToken, timeout: timeout, ct: ct);
 
     public Task<SimpleResponse> Close(string address, TimeSpan? timeout = null, CancellationToken ct = default) => _client.Close(_apiToken, new(address), timeout: timeout, ct: ct);
