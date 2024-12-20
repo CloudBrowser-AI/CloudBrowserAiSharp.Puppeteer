@@ -6,9 +6,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageDescription>Client for connection with CloudBrowser.</PackageDescription>
     <PackageTags>puppeteersharp cloudbrowser connector</PackageTags>
+    <Platforms>AnyCPU;x64</Platforms>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CloudBrowserAiSharp" Version="0.0.6" />
     <PackageReference Include="PuppeteerSharp" Version="20.0.5" />
   </ItemGroup>
 
