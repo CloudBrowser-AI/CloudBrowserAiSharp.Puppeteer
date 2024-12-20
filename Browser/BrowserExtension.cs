@@ -3,7 +3,7 @@ using CloudBrowserAiSharp.Exceptions;
 using PuppeteerSharp;
 using System.Threading.Tasks;
 
-namespace CloudBrowserAiSharp.Puppeteer;
+namespace CloudBrowserAiSharp.Puppeteer.Browser;
 public static class BrowserExtension {
     /// <summary>
     /// Launches a browser asynchronously in CloudbRowser.AI

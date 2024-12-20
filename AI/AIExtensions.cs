@@ -1,9 +1,10 @@
 ﻿using CloudBrowserAiSharp.AI.Types;
 using CloudBrowserAiSharp.Exceptions;
+using CloudBrowserAiSharp.Puppeteer.Extensions;
 using PuppeteerSharp;
 using System.Threading.Tasks;
 
-namespace CloudBrowserAiSharp.Puppeteer;
+namespace CloudBrowserAiSharp.Puppeteer.AIExtensions;
 /// <summary>
 /// Extension class to use AIService implicitly, allowing for seamless AI interactions within web pages and frames.
 /// </summary>

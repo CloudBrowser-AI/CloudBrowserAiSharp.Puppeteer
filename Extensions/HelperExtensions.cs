@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CloudBrowserAiSharp.Puppeteer;
+namespace CloudBrowserAiSharp.Puppeteer.Extensions;
 public static class HelperExtensions {
 
     #region Click
     /// <summary>
-    /// The method runs <c>element.querySelector</c> within the page. Scrolls element into view if needed, and then uses <see cref="PuppeteerSharp.IPage.Mouse"/> to click in the center of the element.
+    /// The method runs <c>element.querySelector</c> within the page. Scrolls element into view if needed, and then uses <see cref="IPage.Mouse"/> to click in the center of the element.
     /// </summary>
     /// <param name="selector">A selector to query element for.</param>
     /// <returns>Task which resolves to <see cref="IElementHandle"/> pointing to the frame element.</returns>
@@ -241,7 +241,7 @@ public static class HelperExtensions {
     /// </summary>
     /// <param name="e">The element whose "id" attribute is to be retrieved.</param>
     /// <returns>The "id" attribute.</returns>
-    public static Task<string> Id(this IElementHandle e) => Attribute(e, "id");
+    public static Task<string> Id(this IElementHandle e) => e.Attribute("id");
 
 
     /// <summary>
@@ -310,4 +310,161 @@ public static class HelperExtensions {
     }
     #endregion
 
+    #region Scroll
+    /// <summary>
+    /// Scrolls the element into view with optional smooth behavior and offset.
+    /// </summary>
+    /// <param name="element">The element to scroll into view.</param>
+    /// <param name="options">Optional scroll options including offset.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static Task ScrollIntoView(this IElementHandle element, ScrollIntoViewOptions options = null) {
+        if (options == null) {
+            return element.EvaluateFunctionAsync("(element,) => element.scrollIntoView({behavior: 'smooth'})");//Behaviour smooth helps to simulate one human
+        } else {
+            return element.EvaluateFunctionAsync(@"
+                (element, offsetX, offsetY) => {
+                    var elementPosition = element.getBoundingClientRect();
+                    var offsetPositionX = elementPosition.left + window.pageXOffset - offsetX;
+                    var offsetPositionY = elementPosition.top + window.pageYOffset - offsetY;
+
+                    window.scrollTo({
+                        left: offsetPositionX,
+                        top: offsetPositionY,
+                        behavior: 'smooth'
+                    });
+                }", options.OffsetX, options.OffsetY);
+        }
+    }
+    /// <summary>
+    /// Scrolls the element matching the selector into view with optional smooth behavior and offset.
+    /// </summary>
+    /// <param name="page">The page containing the element.</param>
+    /// <param name="selector">The selector of the element to scroll into view.</param>
+    /// <param name="options">Optional scroll options including offset.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async Task ScrollIntoView(this IPage page, string selector, ScrollIntoViewOptions options = null) {
+        var element = await page.QuerySelectorAsync(selector).ConfigureAwait(false);
+        await element.ScrollIntoView(options).ConfigureAwait(false);
+    }
+    /// <summary>
+    /// Scrolls the page down by the specified number of pixels.
+    /// </summary>
+    /// <param name="page">The page to scroll.</param>
+    /// <param name="pixels">The number of pixels to scroll down.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static Task ScrollDownByAsync(this IPage page, int pixels) => page.EvaluateExpressionAsync($"window.scrollTo(0, {pixels})");
+    /// <summary>
+    /// Gets the scroll height of the page.
+    /// </summary>
+    /// <param name="page">The page to get the scroll height of.</param>
+    /// <returns>The scroll height of the page.</returns>
+    public static Task<int> ScrollHeight(this IPage page) => page.EvaluateExpressionAsync<int>("document.body.scrollHeight");
+    /// <summary>
+    /// Gets the scroll top position of the page.
+    /// </summary>
+    /// <param name="page">The page to get the scroll top position of.</param>
+    /// <returns>The scroll top position of the page.</returns>
+    public static Task<int> ScrollTop(this IPage page) => page.EvaluateExpressionAsync<int>("document.documentElement.scrollTop");
+    /// <summary>
+    /// Scrolls the page to the bottom with optional step size and delay between steps.
+    /// </summary>
+    /// <param name="page">The page to scroll.</param>
+    /// <param name="step_pixels">The number of pixels to scroll per step. If less than or equal to 0, scrolls to the bottom in one step.</param>
+    /// <param name="max_steps">The maximum number of steps to take.</param>
+    /// <param name="milisecondsBetweenSteps">The delay in milliseconds between steps.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async Task ScrollToBottom(this IPage page, int step_pixels = -1, uint max_steps = 30, int milisecondsBetweenSteps = 100) {
+        if (step_pixels <= 0) {
+            await page.EvaluateExpressionAsync("window.scrollBy(0, document.body.scrollHeight)").ConfigureAwait(false);
+            return;
+        }
+        var posBefore = await page.ScrollTop().ConfigureAwait(false);
+        int stepCount = 0;
+        while (stepCount < max_steps) {
+            await page.ScrollDownByAsync(step_pixels).ConfigureAwait(false);
+            if (milisecondsBetweenSteps >= 0) {
+                await Task.Delay(milisecondsBetweenSteps).ConfigureAwait(false);
+            }
+            var posNow = await page.ScrollTop().ConfigureAwait(false);
+            if (posNow == posBefore)
+                break;
+            posBefore = posNow;
+            stepCount++;
+        }
+    }
+    #endregion
+
+
+    #region Selection
+    /// <summary>
+    /// Retrieves the first child node of the element, which can be an element or text.
+    /// </summary>
+    /// <param name="element">The element whose first child node will be retrieved.</param>
+    /// <returns>The first child node as a MultipleElementHandle.</returns>
+    public static async Task<MultipleElementHandle> FirstChildNode(this IElementHandle element) => await MultipleElementHandle.FromData(await element.EvaluateFunctionHandleAsync("element => element.firstChild").ConfigureAwait(false)).ConfigureAwait(false);
+
+    /// <summary>
+    /// Retrieves all child nodes of the element, which can include elements and text.
+    /// </summary>
+    /// <param name="element">The element whose child nodes will be retrieved.</param>
+    /// <returns>An array of child nodes as MultipleElementHandle.</returns>
+    public static async Task<MultipleElementHandle[]> ChildNodes(this IElementHandle element) => await ToMultipleElementHandleArray(await element.EvaluateFunctionHandleAsync("element => Array.from(element.childNodes)").ConfigureAwait(false)).ConfigureAwait(false);
+
+    /// <summary>
+    /// Retrieves the first child element of the element, excluding text nodes.
+    /// </summary>
+    /// <param name="element">The element whose first child element will be retrieved.</param>
+    /// <returns>The first child element as an IElementHandle.</returns>
+    public static async Task<IElementHandle> FirstChildElement(this IElementHandle element) => await element.EvaluateFunctionHandleAsync("element => element.firstElementChild").ConfigureAwait(false) as IElementHandle;
+
+    /// <summary>
+    /// Retrieves all child elements of the element, excluding text nodes.
+    /// </summary>
+    /// <param name="element">The element whose child elements will be retrieved.</param>
+    /// <returns>An array of child elements as IElementHandle.</returns>
+    public static async Task<IElementHandle[]> ChildElement(this IElementHandle element) => await ToIElementHandleArray(await element.EvaluateFunctionHandleAsync("element => Array.from(element.children)").ConfigureAwait(false)).ConfigureAwait(false);
+
+    /// <summary>
+    /// Retrieves the parent element of the specified element.
+    /// </summary>
+    /// <param name="element">The element whose parent will be retrieved.</param>
+    /// <returns>The parent element as an IElementHandle.</returns>
+    public static async Task<IElementHandle> Parent(this IElementHandle element) => await element.EvaluateFunctionHandleAsync("element => element.parentElement").ConfigureAwait(false) as IElementHandle;
+
+    /// <summary>
+    /// Retrieves the closest ancestor of the specified element that matches the selector.
+    /// </summary>
+    /// <param name="element">The element whose closest ancestor will be retrieved.</param>
+    /// <param name="selector">The selector to match the ancestor.</param>
+    /// <returns>The closest ancestor element as an IElementHandle.</returns>
+    public static async Task<IElementHandle> ClosestAncestor(this IElementHandle element, string selector) => await element.EvaluateFunctionHandleAsync("(element, selector) => element.closest(selector)", selector).ConfigureAwait(false) as IElementHandle;
+
+    /// <summary>
+    /// Converts a JavaScript handle to an array of IElementHandle.
+    /// </summary>
+    /// <param name="arrayHandle">The JavaScript handle to convert.</param>
+    /// <returns>An array of IElementHandle.</returns>
+    static async Task<IElementHandle[]> ToIElementHandleArray(IJSHandle arrayHandle) {
+        var properties = await arrayHandle.GetPropertiesAsync().ConfigureAwait(false);
+        return properties.Values.Select(p => p as IElementHandle).Where(eh => eh != null).ToArray();
+    }
+
+    /// <summary>
+    /// Converts a JavaScript handle to an array of MultipleElementHandle.
+    /// </summary>
+    /// <param name="arrayHandle">The JavaScript handle to convert.</param>
+    /// <returns>An array of MultipleElementHandle.</returns>
+    static async Task<MultipleElementHandle[]> ToMultipleElementHandleArray(IJSHandle arrayHandle) {
+        var properties = await arrayHandle.GetPropertiesAsync().ConfigureAwait(false);
+        var values = properties.Values.ToArray();
+
+        MultipleElementHandle[] children = new MultipleElementHandle[values.Length];
+
+        for (var i = 0; i < values.Length; i++) {
+            children[i] = await MultipleElementHandle.FromData(values[i]).ConfigureAwait(false);
+        }
+        return children;
+    }
+
+    #endregion
 }
