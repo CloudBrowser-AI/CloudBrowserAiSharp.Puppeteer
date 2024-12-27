@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace CloudBrowserAiSharp.Puppeteer.Extensions;
 public static class HelperExtensions {
-
     #region Click
     /// <summary>
     /// The method runs <c>element.querySelector</c> within the page. Scrolls element into view if needed, and then uses <see cref="IPage.Mouse"/> to click in the center of the element.
@@ -393,7 +392,6 @@ public static class HelperExtensions {
         }
     }
     #endregion
-
 
     #region Selection
     /// <summary>
