@@ -30,18 +30,8 @@ public static class BrowserExtension {
     /// <param name="token">The CloudBrowser.AI API token for authentication.</param>
     /// <param name="options">Options for launching the browser.</param>
     /// <returns>An IBrowser instance.</returns>
-    public static async Task<IBrowser> LaunchAsync(string token, BrowserOptions options = null) {
-        using var svc = new BrowserService(token);
-        var rp = await svc.Open(options).ConfigureAwait(false);
-        ExceptionHelper.ToException(rp.Status, null);
-
-        IBrowser browser = await PuppeteerSharp.Puppeteer.ConnectAsync(new ConnectOptions {
-            BrowserWSEndpoint = rp.Address,
-            DefaultViewport = null,
-            AcceptInsecureCerts = true,
-            SlowMo = 0
-        }).ConfigureAwait(continueOnCapturedContext: false);
-
-        return browser;
+    public static Task<IBrowser> LaunchAsync(string token, BrowserOptions options = null) {
+        using BrowserService svc = new (token);
+        return LaunchAsync(svc, options);
     }
 }
