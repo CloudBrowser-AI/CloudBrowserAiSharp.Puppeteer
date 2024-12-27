@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CloudBrowserAiSharp.Puppeteer" Version="0.0.8" />
+    <PackageReference Include="CloudBrowserAiSharp.Puppeteer" Version="0.0.9" />
   </ItemGroup>
 
 </Project>
