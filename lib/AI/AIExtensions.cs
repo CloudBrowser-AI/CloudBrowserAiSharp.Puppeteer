@@ -17,9 +17,20 @@ public static class AIExtensions {
     /// </summary>
     /// <param name="apiToken">CloudBrowser.AI's API token for authentication.</param>
     /// <param name="options">The AI options to be used for requests.</param>
-    public static void SetGlobalSettings(string apiToken, AIOptions options) {
+    public static void SetGlobalSettings(string apiToken, AIOptions options = null) {
         _svc?.Dispose();
         _svc = new(apiToken, options);
+    }
+
+    /// <summary>
+    /// Configures the global settings for AIService, enabling the use of extension methods.
+    /// </summary>
+    /// <param name="apiToken">The CloudBrowser.AI API token for authentication.</param>
+    /// <param name="openAiToken">The OpenAI token for authentication</param>
+    /// <param name="openAiModel">The OpenAI model to use for requests</param>
+    public static void SetGlobalSettings(string apiToken, string openAiToken, string openAiModel = null) {
+        _svc?.Dispose();
+        _svc = new(apiToken, openAiToken, openAiModel);
     }
 
     #region Query

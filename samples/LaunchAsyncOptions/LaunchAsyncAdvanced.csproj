@@ -9,5 +9,4 @@
   <ItemGroup>
     <PackageReference Include="CloudBrowserAiSharp.Puppeteer" Version="0.0.9" />
   </ItemGroup>
-
 </Project>
