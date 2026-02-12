@@ -1,30 +1,76 @@
-name: Generate NuGet and push to Github
+name: Generate NuGet and push to Nuget.org
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - 'master'
-      - 'develop'
-      - 'feature/*'
-      - '!ops'
-    paths-ignore:
-      - '.github/**'
-  pull_request:
-    types: [closed]
-    branches:
-      - master
+    tags:
+      - '*.*.*'
+      - 'v*.*.*'
+
+env:
+  DOTNET_PROJECT: CloudBrowserAiSharp.Puppeteer
+  DOTNET_CSPROJ: ./lib/CloudBrowserAiSharp.Puppeteer.csproj
+  RESTORE_SOURCES: --source https://api.nuget.org/v3/index.json
+  CONFIGURATION: Release
+  FRAMEWORK: net8.0
+  RUNTIME: linux-x64
+  ADDITIONAL_PROPERTIES: ""
 
 jobs:
-  simple-job-for-reuse-workflow:
-    uses: HustleGotReal/reusable-workflows/.github/workflows/makenugets.yml@master
-    with:
-      DOTNET_PROJECT: CloudBrowserAiSharp.Puppeteer
-      DOTNET_CSPROJ: ./lib/CloudBrowserAiSharp.Puppeteer.csproj
-      RESTORE_SOURCES: --source https://api.nuget.org/v3/index.json
-      CONFIGURATION: Release
-      FRAMEWORK: net8.0
-      RUNTIME: linux-x64
-      ADDITIONAL_PROPERTIES: ""
-    secrets:
-      GPACKAGES_TOKEN: ${{secrets.GPACKAGES_TOKEN}}
+  generate-nuget-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0 # Required for proper tag discovery
+
+      - name: Extract Git Branch or Tag Information
+        id: extract_info
+        run: |
+          # Extract the tag or branch name
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            SOURCE_TAG=${GITHUB_REF#refs/tags/}
+          else
+            MBRANCH=${GITHUB_REF#refs/heads/}
+            SOURCE_TAG="${MBRANCH}-$(date +%s)"
+          fi
+          echo "SOURCE_TAG=$SOURCE_TAG" >> $GITHUB_ENV
+          echo "Detected source tag: $SOURCE_TAG"
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.0.x
+       
+      - name: Restore
+        run: |
+          dotnet restore /property:Configuration=${{ env.CONFIGURATION }} \
+                         /property:TargetFramework=${{ env.FRAMEWORK }} \
+                         --runtime ${{ env.RUNTIME }} \
+                         ${{ env.DOTNET_CSPROJ }} ${{ env.RESTORE_SOURCES }}
+
+      - name: Build
+        run: |
+          dotnet build -f ${{ env.FRAMEWORK }} \
+                       -r ${{ env.RUNTIME }} \
+                       ${{ env.DOTNET_CSPROJ }} \
+                       /property:Configuration=${{ env.CONFIGURATION }} \
+                       ${{ env.ADDITIONAL_PROPERTIES }} \
+                       /p:DebugSymbols=true \
+                       /p:DebugType=portable \
+                       /p:SymbolPackageFormat=snupkg \
+                       /p:VersionPrefix=$SOURCE_TAG
+          mkdir -p nupkg-tmp
+          mv $(dirname ${{ env.DOTNET_CSPROJ }})/bin/${{ env.CONFIGURATION }}/* nupkg-tmp/
+
+      - name: Publish package to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./nupkg-tmp/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
