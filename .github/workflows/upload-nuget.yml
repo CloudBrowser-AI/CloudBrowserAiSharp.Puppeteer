@@ -31,15 +31,17 @@ jobs:
       - name: Extract Git Branch or Tag Information
         id: extract_info
         run: |
-          # Extract the tag or branch name
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            SOURCE_TAG=${GITHUB_REF#refs/tags/}
+          MBRANCH=${GITHUB_REF#refs/*/}
+          if [[ $MBRANCH == feature/* ]]; then
+            BRANCH="a-${MBRANCH#feature/}.$(date +%Y%m%d%H)$(printf %02d $((10#$(date +%M) / 5 * 5)))"
+          elif [[ $MBRANCH == "master" ]] || [[ $MBRANCH == "main" ]]; then
+            BRANCH="" ;
           else
-            MBRANCH=${GITHUB_REF#refs/heads/}
-            SOURCE_TAG="${MBRANCH}-$(date +%s)"
+            BRANCH="${MBRANCH}.$(date +%Y%m%d%H)$(printf %02d $((10#$(date +%M) / 5 * 5)))"
           fi
-          echo "SOURCE_TAG=$SOURCE_TAG" >> $GITHUB_ENV
-          echo "Detected source tag: $SOURCE_TAG"
+          echo "BRANCH: $BRANCH";
+          echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Started by: $GITHUB_ACTOR | SHA: $GITHUB_SHA | Tag: ${GITHUB_REF#refs/tags/}"
 
       - name: Setup NuGet
         uses: NuGet/setup-nuget@v2.0.1
