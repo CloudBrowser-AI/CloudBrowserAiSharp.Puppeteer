@@ -32,15 +32,27 @@ jobs:
         id: extract_info
         run: |
           MBRANCH=${GITHUB_REF#refs/*/}
-          if [[ $MBRANCH == feature/* ]]; then
-            BRANCH="a-${MBRANCH#feature/}.$(date +%Y%m%d%H)$(printf %02d $((10#$(date +%M) / 5 * 5)))"
-          elif [[ $MBRANCH == "master" ]] || [[ $MBRANCH == "main" ]]; then
-            BRANCH="" ;
+          BRANCH=""
+          SOURCE_TAG="0.0.0"
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            SOURCE_TAG=${GITHUB_REF#refs/tags/}
+            SOURCE_TAG=${SOURCE_TAG#v}
           else
-            BRANCH="${MBRANCH}.$(date +%Y%m%d%H)$(printf %02d $((10#$(date +%M) / 5 * 5)))"
+            if [[ $MBRANCH == feature/* ]]; then
+              BRANCH="a-${MBRANCH#feature/}.$(date +%Y%m%d%H)$(printf %02d $((10#$(date +%M) / 5 * 5)))"
+            elif [[ $MBRANCH == "master" ]] || [[ $MBRANCH == "main" ]]; then
+              BRANCH=""
+            else
+              BRANCH="${MBRANCH}.$(date +%Y%m%d%H)$(printf %02d $((10#$(date +%M) / 5 * 5)))"
+            fi
+
+            BRANCH=${BRANCH//\//-}
           fi
-          echo "BRANCH: $BRANCH";
-          echo "BRANCH=$BRANCH" >> $GITHUB_OUTPUT
+
+          echo "SOURCE_TAG=$SOURCE_TAG" >> "$GITHUB_OUTPUT"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "BRANCH: $BRANCH"
           echo "Started by: $GITHUB_ACTOR | SHA: $GITHUB_SHA | Tag: ${GITHUB_REF#refs/tags/}"
 
       - name: Setup NuGet
@@ -60,6 +72,11 @@ jobs:
 
       - name: Build
         run: |
+          VERSION_SUFFIX_ARG=""
+          if [[ -n "${{ steps.extract_info.outputs.BRANCH }}" ]]; then
+            VERSION_SUFFIX_ARG="/p:VersionSuffix=${{ steps.extract_info.outputs.BRANCH }}"
+          fi
+
           dotnet build -f ${{ env.FRAMEWORK }} \
                        -r ${{ env.RUNTIME }} \
                        ${{ env.DOTNET_CSPROJ }} \
@@ -68,7 +85,8 @@ jobs:
                        /p:DebugSymbols=true \
                        /p:DebugType=portable \
                        /p:SymbolPackageFormat=snupkg \
-                       /p:VersionPrefix=$SOURCE_TAG
+                       /p:VersionPrefix=${{ steps.extract_info.outputs.SOURCE_TAG }} \
+                       $VERSION_SUFFIX_ARG
           mkdir -p nupkg-tmp
           mv $(dirname ${{ env.DOTNET_CSPROJ }})/bin/${{ env.CONFIGURATION }}/* nupkg-tmp/
 
