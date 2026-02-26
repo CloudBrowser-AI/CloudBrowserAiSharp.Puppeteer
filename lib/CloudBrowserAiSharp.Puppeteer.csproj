@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="CloudBrowserAiSharp" Version="0.0.8" />
-    <PackageReference Include="PuppeteerSharp" Version="21.0.1" />
+    <PackageReference Include="PuppeteerSharp" Version="21.1.1" />
   </ItemGroup>
 
 </Project>
